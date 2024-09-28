@@ -45,7 +45,7 @@ jobs:
           pull: true # Pull new version of base image, always; avoid bit-rot
           push: true
           labels: |
-            org.opencontainers.image.title=${{ github.repository }}
+            org.opencontainers.image.title=${{ github.repository }}-${{ github.run_number }}
             org.opencontainers.image.description=${{ github.event.repository.description }}
             org.opencontainers.image.url=${{ github.event.repository.html_url }}
             org.opencontainers.image.source=${{ github.event.repository.clone_url }}
@@ -54,9 +54,10 @@ jobs:
           cache-from: type=gha # all-automatic Github Actions caching
           cache-to: type=gha,mode=max
           build-args: |
+            VERSION=${{ github.run_number }}
           tags: ghcr.io/${{ github.repository }}:latest-${{ matrix.arch.name }}
 
-  # A separate job, that depends on the each-arch job above, that does the multi-arch manifest, by pulling the images for each arch and pushing a manifest.
+  # A separate job, that depends on the each-arch job above, that does the multi-arch manifest.
   multi-arch:
     needs: each-arch
     runs-on: ubuntu-latest
@@ -76,13 +77,8 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Pull images for each arch
+      - name: Create and push multi-arch manifest using buildx
         run: |
-          docker pull ghcr.io/${{ github.repository }}:latest-amd64
-          docker pull ghcr.io/${{ github.repository }}:latest-arm64
-
-      - name: Create and push multi-arch manifest
-        run: |
-          docker manifest create ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:latest-amd64 ghcr.io/${{ github.repository }}:latest-arm64
-          docker manifest push ghcr.io/${{ github.repository }}:latest
+          docker buildx imagetools create -t ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:latest-amd64 ghcr.io/${{ github.repository }}:latest-arm64
+          docker buildx imagetools inspect ghcr.io/${{ github.repository }}:latest
   
