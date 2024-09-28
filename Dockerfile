@@ -16,7 +16,7 @@ RUN git diff
 RUN cargo build --release --no-default-features --features pulseaudio-backend
 
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y libpulse0 ca-certificates && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN apt-get update && apt-get install -y libpulse0 ca-certificates pamixer && rm -rf /var/lib/apt/lists/* && apt-get clean
 COPY --from=builder /src/librespot/target/release/librespot /usr/local/bin/librespot
 RUN /usr/local/bin/librespot --version
 RUN /usr/local/bin/librespot --help
