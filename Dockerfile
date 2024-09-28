@@ -8,9 +8,11 @@ RUN cargo fetch
 RUN cargo build --release --no-default-features --features pulseaudio-backend
 
 ARG VERSION="666"
+RUN git pull --rebase # Make sure we have the latest changes; do this after ARG is declared so we bust cacheing
 # Now bake the build version into package.version in Cargo.toml and Cargo.lock and build again.
 # Use 'sed' to edit lines 'version = "0.5.0-dev"' with 'version = "0.5.0-dev-${VERSION}"' in both Cargo.toml and Cargo.lock at the same time.
-RUN sed -i "s/version = \"0.5.0-dev\"/version = \"0.5.0-dev-${VERSION}\"/g" Cargo.toml Cargo.lock
+RUN sed -i "s/version = \"0.5.0-dev\"/version = \"0.5.0-dev-build-${VERSION}\"/g" Cargo.lock $(find . -name Cargo.toml)
+RUN git diff
 RUN cargo build --release --no-default-features --features pulseaudio-backend
 
 FROM debian:bookworm-slim

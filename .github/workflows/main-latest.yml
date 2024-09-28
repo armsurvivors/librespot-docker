@@ -51,8 +51,8 @@ jobs:
             org.opencontainers.image.source=${{ github.event.repository.clone_url }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
-          cache-from: type=gha # all-automatic Github Actions caching
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.arch.name }} # all-automatic Github Actions caching
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch.name }}
           build-args: |
             VERSION=${{ github.run_number }}
           tags: ghcr.io/${{ github.repository }}:latest-${{ matrix.arch.name }}
