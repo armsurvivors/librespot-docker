@@ -39,7 +39,7 @@ jobs:
 
       - name: Build and push ${{ matrix.arch.name }}
         id: docker_build
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
@@ -79,10 +79,15 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Create and push multi-arch manifest using buildx
+      - name: Create and push multi-arch manifest using buildx (latest)
         run: |
           docker buildx imagetools create -t ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:latest-amd64 ghcr.io/${{ github.repository }}:latest-arm64
           docker buildx imagetools inspect ghcr.io/${{ github.repository }}:latest
-      
+
+      - name: Create and push multi-arch manifest using buildx (v${{ github.run_number }})
+        run: |
+          docker buildx imagetools create -t ghcr.io/${{ github.repository }}:v${{ github.run_number }} ghcr.io/${{ github.repository }}:latest-amd64 ghcr.io/${{ github.repository }}:latest-arm64
+          docker buildx imagetools inspect ghcr.io/${{ github.repository }}:v${{ github.run_number }}
+
       # Keep GHA alive
       - uses: gautamkrishnar/keepalive-workflow@v2
